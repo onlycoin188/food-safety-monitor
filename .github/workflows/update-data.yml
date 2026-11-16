@@ -1,0 +1,48 @@
+# 매일 식품안전나라 Open API를 받아 검증하고, 바뀐 경우에만 커밋합니다.
+# 커밋이 올라가면 Vercel이 자동으로 다시 배포합니다.
+name: 데이터 자동 갱신
+
+on:
+  schedule:
+    # 매일 09:00(KST)
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      FOODSAFETY_API_KEY: ${{ secrets.FOODSAFETY_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # 수집 스크립트는 Node 내장 기능만 써서 npm install이 필요 없습니다
+      - name: 수집 (접속 실패 시 2분 간격으로 3번까지)
+        run: |
+          for i in 1 2 3; do
+            node pipeline/fetch.mjs && exit 0
+            echo "수집 실패 ($i/3)"; sleep 120
+          done
+          exit 1
+
+      - name: 검증·분류·변경 감지
+        run: node pipeline/aggregate.mjs | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: 바뀐 경우에만 커밋
+        run: |
+          if git diff --quiet -- public/data/dashboard.json; then
+            echo "데이터 변경 없음" | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add public/data/dashboard.json data/state/seen.json
+          git commit -m "데이터 자동 갱신 $(date -u +%Y-%m-%d)"
+          git push
