@@ -1,3 +1,4 @@
+import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
 import './globals.css';
 
 export const metadata = {
@@ -13,10 +14,7 @@ export const viewport = { width: 'device-width', initialScale: 1, themeColor: '#
 export default function RootLayout({ children }) {
   return (
     <html lang="ko">
-      <head>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
-      </head>
-      <body className="min-h-screen bg-slate-50 font-sans text-[15px] leading-relaxed text-slate-900">{children}</body>
+      <body className="min-h-screen bg-slate-50 font-sans text-[16px] leading-relaxed text-slate-900">{children}</body>
     </html>
   );
 }

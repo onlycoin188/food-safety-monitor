@@ -1,7 +1,7 @@
 {
  "meta": {
   "source": "sample",
-  "fetchedAt": "2026-11-16T17:26:23.129Z",
+  "fetchedAt": "2026-11-16T17:36:24.741Z",
   "asOf": "2026-11-17",
   "window": "2025.12 ~ 2026.11",
   "totals": {
@@ -42,9 +42,15 @@
     "hard": true
    },
    {
-    "name": "회수·판매중지 필수 항목",
+    "name": "회수·판매중지 업체·제품명",
     "ok": true,
     "detail": "100% 채워짐",
+    "hard": true
+   },
+   {
+    "name": "회수·판매중지 전일 대비",
+    "ok": true,
+    "detail": "이전 382건 → 382건",
     "hard": true
    },
    {
@@ -66,9 +72,15 @@
     "hard": true
    },
    {
-    "name": "행정처분 필수 항목",
+    "name": "행정처분 업체·제품명",
     "ok": true,
     "detail": "100% 채워짐",
+    "hard": true
+   },
+   {
+    "name": "행정처분 전일 대비",
+    "ok": true,
+    "detail": "이전 1,407건 → 1,407건",
     "hard": true
    },
    {

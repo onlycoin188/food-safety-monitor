@@ -100,9 +100,9 @@ for (const [key, rows, label] of [['recall', recallAll, '회수·판매중지'],
   const dated = rows.filter(r => r.date).length;
   check(`${label} 날짜 형식`, pct(dated, rows.length) >= 95, `${pct(dated, rows.length)}% 정상`);
   const named = rows.filter(r => r.company && (key === 'action' || r.product)).length;
-  check(`${label} 필수 항목`, pct(named, rows.length) >= 95, `${pct(named, rows.length)}% 채워짐`);
+  check(`${label} 업체·제품명`, pct(named, rows.length) >= 95, `${pct(named, rows.length)}% 채워짐`);
   const prevTotal = old?.meta?.source === raw[key].source ? old?.meta?.totals?.[key] : null;
-  if (prevTotal) check(`${label} 급감 여부`, rows.length >= prevTotal * 0.8, `이전 ${prevTotal.toLocaleString()}건 → ${rows.length.toLocaleString()}건`);
+  if (prevTotal) check(`${label} 전일 대비`, rows.length >= prevTotal * 0.8, `이전 ${prevTotal.toLocaleString()}건 → ${rows.length.toLocaleString()}건`);
   const latest = rows.map(r => r.date).filter(Boolean).sort().at(-1);
   if (!sample) check(`${label} 최신성`, latest && latest >= addDays(today, -45), `최근 등록일 ${latest}`, false);
   const dup = rows.length - new Set(rows.map(r => r.id)).size;
