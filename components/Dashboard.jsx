@@ -78,7 +78,7 @@ function RecallTable({ rows, isNew, infoUrl }) {
       <CardHeader className="gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <CardTitle className="flex items-center gap-2"><PackageX className="size-4 text-red-600" aria-hidden />최근 회수·판매중지</CardTitle>
-          <CardDescription className="mt-1.5">최근 {fmt(rows.length)}건입니다. 행을 누르면 소비기한, 바코드, 일련번호가 나옵니다.</CardDescription>
+          <CardDescription className="mt-1.5">최근 {fmt(rows.length)}건입니다. 행을 누르면 소비기한, 바코드, 일련번호를 볼 수 있습니다.</CardDescription>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative w-full sm:w-56">
@@ -94,7 +94,7 @@ function RecallTable({ rows, isNew, infoUrl }) {
           <TBody>
             {list.slice(0, limit).map(r => (
               <FragmentRow key={r.id} open={open === r.id} onToggle={() => setOpen(open === r.id ? null : r.id)} cols={5}
-                detail={<Detail items={[['식품유형', r.type], ['제조일자', r.made], ['유통·소비기한', r.expiry], ['바코드', r.barcode], ['품목제조보고번호', r.reportNo], ['일련번호', r.seq], ['처음 확인', r.firstSeen ? dot(r.firstSeen) : '첫 수집 때 이미 있던 건'], ['출처', 'I0490 회수·판매중지']]} />}>
+                detail={<Detail items={[['식품유형', r.type], ['제조일자', r.made], ['유통·소비기한', r.expiry], ['바코드', r.barcode], ['품목제조보고번호', r.reportNo], ['일련번호', r.seq], ['처음 확인', r.firstSeen ? dot(r.firstSeen) : '첫 수집 이전'], ['출처', 'I0490 회수·판매중지']]} />}>
                 <TD className="whitespace-nowrap tabular-nums text-slate-700">
                   {dot(r.date)}{isNew(r) && <Badge variant="new" className="ml-1.5 align-[1px]">신규</Badge>}
                 </TD>
@@ -125,7 +125,7 @@ function ActionTable({ rows, isNew, infoUrl, kinds }) {
       <CardHeader className="gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <CardTitle className="flex items-center gap-2"><Gavel className="size-4 text-blue-600" aria-hidden />최근 행정처분</CardTitle>
-          <CardDescription className="mt-1.5">처분 확정일 기준 최근 {fmt(rows.length)}건입니다. 행을 누르면 위반 법령과 처분 기간이 나옵니다.</CardDescription>
+          <CardDescription className="mt-1.5">처분 확정일 기준 최근 {fmt(rows.length)}건입니다. 행을 누르면 위반 법령과 처분 기간을 볼 수 있습니다.</CardDescription>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative w-full sm:w-56">
@@ -141,7 +141,7 @@ function ActionTable({ rows, isNew, infoUrl, kinds }) {
           <TBody>
             {list.slice(0, limit).map(r => (
               <FragmentRow key={r.id} open={open === r.id} onToggle={() => setOpen(open === r.id ? null : r.id)} cols={4}
-                detail={<Detail items={[['위반 법령', r.law], ['처분 기간', r.period], ['지역', r.region], ['인허가번호', r.licenseNo], ['위반 분류', r.vCat], ['처음 확인', r.firstSeen ? dot(r.firstSeen) : '첫 수집 때 이미 있던 건'], ['출처', 'I0470 행정처분']]} />}>
+                detail={<Detail items={[['위반 법령', r.law], ['처분 기간', r.period], ['지역', r.region], ['인허가번호', r.licenseNo], ['위반 분류', r.vCat], ['처음 확인', r.firstSeen ? dot(r.firstSeen) : '첫 수집 이전'], ['출처', 'I0470 행정처분']]} />}>
                 <TD className="whitespace-nowrap tabular-nums text-slate-700">
                   {dot(r.date)}{isNew(r) && <Badge variant="new" className="ml-1.5 align-[1px]">신규</Badge>}
                 </TD>
@@ -195,7 +195,7 @@ export default function Dashboard({ D }) {
     <>
       {sample && (
         <div className="bg-amber-50 px-4 py-2.5 text-center text-[14px] text-amber-900 ring-1 ring-amber-200">
-          지금 보이는 숫자와 업체명은 화면 확인용 <b>가상 샘플 데이터</b>입니다. 인증키를 넣고 <code className="rounded bg-amber-100 px-1">npm run data</code>로 실제 데이터를 받아야 합니다.
+          지금은 화면 확인용 <b>가상 데이터</b>입니다. 숫자와 업체명 모두 실제가 아닙니다.
         </div>
       )}
 
@@ -209,7 +209,7 @@ export default function Dashboard({ D }) {
             <a href="#trend" className="hover:text-slate-900">추이</a>
             <a href="#class" className="hover:text-slate-900">사유</a>
             <a href="#list" className="hover:text-slate-900">목록</a>
-            <a href="#how" className="hover:text-slate-900">돌아가는 방식</a>
+            <a href="#how" className="hover:text-slate-900">운영 방식</a>
           </nav>
           <Badge variant="success" className="ml-auto md:ml-0"><span className="size-1.5 rounded-full bg-emerald-500" />매일 09:00 갱신</Badge>
         </div>
@@ -223,8 +223,8 @@ export default function Dashboard({ D }) {
             어제 이후 새로 올라온<br />식품 회수·행정처분
           </h1>
           <p className="mt-3 max-w-2xl text-[16.5px] text-slate-700">
-            식품안전나라에는 회수·판매중지와 행정처분이 매일 올라옵니다. 사이트에 들어가 어제와 뭐가 달라졌는지 눈으로 찾던 일을, 매일 아침 9시에 대신 하도록 만들었습니다.
-            전날까지 없던 건에는 <Badge variant="new" className="align-[2px]">신규</Badge>가 붙습니다.
+            식품안전나라에 올라오는 회수·판매중지와 행정처분을 매일 오전 9시에 모아 옵니다.
+            어제까지 없던 건은 <Badge variant="new" className="align-[2px]">신규</Badge>로 표시해서, 새로 올라온 것만 바로 확인할 수 있습니다.
           </p>
           <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-[13.5px] text-slate-600">
             <span className="inline-flex items-center gap-1.5"><Clock className="size-3.5" aria-hidden />수집 <b className="font-medium tabular-nums text-slate-700">{kstTime(M.fetchedAt)}</b> (KST)</span>
@@ -232,15 +232,17 @@ export default function Dashboard({ D }) {
             <span>출처 식품의약품안전처 식품안전나라 Open API (I0490, I0470)</span>
           </div>
 
-          <ul className="mt-6 grid gap-2 rounded-xl border border-slate-200 bg-white p-5 text-[15px] text-slate-700 shadow-sm">
-            {[
-              '목록은 두 API를 통째로 받아서 만듭니다. 받은 건수가 맞지 않거나 날짜가 깨져 있으면 그날은 반영하지 않고 전날 화면을 그대로 둡니다.',
-              '달라진 게 없는 날은 다시 배포하지 않습니다. 그래서 수집 시각이 곧 마지막으로 내용이 바뀐 시각입니다.',
-              '건마다 등록일과 일련번호(행정처분은 인허가번호)를 같이 적어 두었습니다. 식품안전나라에서 원문을 바로 찾아볼 수 있습니다.',
-            ].map(t => (
-              <li key={t} className="flex gap-2.5"><CircleCheck className="mt-[5px] size-4 shrink-0 text-red-600" aria-hidden />{t}</li>
-            ))}
-          </ul>
+          <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="flex items-center gap-2 text-[15px] font-semibold"><Info className="size-4 text-red-600" aria-hidden />만든 이유</h2>
+            <p className="mt-2 max-w-3xl text-[15px] text-slate-700">
+              회사에서 식품 법령과 안전 이슈를 요약해 메일로 보내는 자동화 과제를 3년 넘게 운영하고 있습니다.
+              담당자가 매일 1시간쯤 들이던 확인 작업이 10분 안쪽으로 줄어든 과제입니다.
+            </p>
+            <p className="mt-1.5 max-w-3xl text-[15px] text-slate-700">
+              운영을 맡아 온 일이라, 수집부터 검증, 화면까지 처음부터 직접 만들어 보고 싶었습니다.
+              사내 데이터는 밖에서 쓸 수 없어서, 누구나 받을 수 있는 식품안전나라 공개 데이터로 같은 종류의 일을 다시 만들었습니다.
+            </p>
+          </div>
         </section>
 
         {/* KPI */}
@@ -248,14 +250,14 @@ export default function Dashboard({ D }) {
           <Kpi icon={PackageX} tone="bg-red-50 text-red-600" label="회수·판매중지 · 최근 30일" value={K.recall30} foot={<Change now={K.recall30} prev={K.recall30Prev} />} />
           <Kpi icon={Gavel} tone="bg-blue-50 text-blue-600" label="행정처분 · 최근 30일" value={K.action30} foot={<Change now={K.action30} prev={K.action30Prev} />} />
           <Kpi icon={TriangleAlert} tone="bg-amber-50 text-amber-600" label="1등급 회수 · 최근 30일" value={K.grade1_30}
-            foot={<span className="text-slate-600">위해 우려가 가장 큰 등급 · 영업·제조정지 <b className="font-semibold tabular-nums text-slate-700">{fmt(K.stop30)}</b>건</span>} />
+            foot={<span className="text-slate-600">건강에 미치는 위해가 가장 큰 등급 · 영업·제조정지 <b className="font-semibold tabular-nums text-slate-700">{fmt(K.stop30)}</b>건</span>} />
           <Kpi icon={BellRing} tone="bg-slate-100 text-slate-700" label="새로 올라온 건 · 최근 7일" value={K.new7.recall + K.new7.action}
             foot={<span className="text-slate-600 tabular-nums">회수 {fmt(K.new7.recall)}건 · 행정처분 {fmt(K.new7.action)}건</span>} />
         </section>
 
         {/* 추이 */}
         <section className="mt-12">
-          <SectionHead id="trend" no="01" title="월별 추이" desc="최근 12개월 동안 달마다 몇 건 올라왔는지입니다. 행정처분이 회수보다 훨씬 많아서 그래프를 나눴습니다. 이번 달은 아직 안 끝나 옅게 칠했습니다." />
+          <SectionHead id="trend" no="01" title="월별 추이" desc="최근 12개월의 월별 등록 건수입니다. 행정처분이 회수보다 훨씬 많아 그래프를 따로 그렸습니다. 이번 달은 집계 중이라 옅게 표시했습니다." />
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <Card className="lg:col-span-2">
               <CardContent className="grid grid-cols-1 gap-6 pt-5 md:grid-cols-2">
@@ -279,8 +281,8 @@ export default function Dashboard({ D }) {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><BellRing className="size-4 text-slate-600" aria-hidden />새 항목이 잡힌 날</CardTitle>
-                <CardDescription>아무것도 안 올라온 날은 빠집니다.</CardDescription>
+                <CardTitle className="flex items-center gap-2"><BellRing className="size-4 text-slate-600" aria-hidden />신규 등록 기록</CardTitle>
+                <CardDescription>새로 올라온 건이 없는 날은 표시하지 않습니다.</CardDescription>
               </CardHeader>
               <CardContent>
                 {D.changes.length ? (
@@ -295,7 +297,7 @@ export default function Dashboard({ D }) {
                     ))}
                   </ul>
                 ) : (
-                  <p className="flex items-start gap-2 rounded-lg bg-slate-50 p-3 text-[14px] text-slate-600"><Info className="mt-0.5 size-4 shrink-0" aria-hidden />{dot(M.baselineAt)}에 처음 수집했습니다. 이날 이미 있던 건은 신규로 치지 않고, 다음 날부터 새로 올라온 건만 여기에 적습니다.</p>
+                  <p className="flex items-start gap-2 rounded-lg bg-slate-50 p-3 text-[14px] text-slate-600"><Info className="mt-0.5 size-4 shrink-0" aria-hidden />{dot(M.baselineAt)}에 처음 수집했습니다. 그날 이미 올라와 있던 건은 신규로 세지 않고, 이후에 올라온 건만 기록합니다.</p>
                 )}
                 {lastChange && <p className="mt-3 text-[13px] text-slate-500">가장 최근 {dot(lastChange.date)}</p>}
               </CardContent>
@@ -305,7 +307,7 @@ export default function Dashboard({ D }) {
 
         {/* 분류 */}
         <section className="mt-12">
-          <SectionHead id="class" no="02" title="사유별로 보면" desc="API가 주는 사유는 문장이라 그대로는 셀 수 없습니다. 대장균, 이물, 위생교육 같은 단어가 들어 있는지로 묶었고, 어디에도 안 걸리면 기타로 뒀습니다. 최근 12개월 기준입니다." />
+          <SectionHead id="class" no="02" title="사유별로 보면" desc="회수 사유와 위반 내용은 문장으로 제공됩니다. 그래서 대장균, 이물, 위생교육 같은 핵심 단어를 기준으로 묶었고, 어느 쪽에도 해당하지 않으면 기타로 분류했습니다. 최근 12개월 기준입니다." />
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <Card>
               <CardHeader><CardTitle>회수 사유</CardTitle><CardDescription className="tabular-nums">회수·판매중지 {fmt(totalRecall)}건</CardDescription></CardHeader>
@@ -324,7 +326,7 @@ export default function Dashboard({ D }) {
 
         {/* 목록 */}
         <section className="mt-12">
-          <SectionHead id="list" no="03" title="최근 목록" desc="최근 등록순입니다. 지난 7일 사이 새로 잡힌 건에 신규가 붙습니다." />
+          <SectionHead id="list" no="03" title="최근 목록" desc="최근 등록순입니다. 최근 7일 안에 새로 올라온 건은 신규로 표시합니다. 건마다 일련번호나 인허가번호를 함께 적어, 식품안전나라에서 원문을 찾아볼 수 있습니다." />
           <div className="grid grid-cols-1 gap-4">
             <RecallTable rows={D.recent.recall} isNew={isNew} infoUrl={svc.recall.infoUrl} />
             <ActionTable rows={D.recent.action} isNew={isNew} infoUrl={svc.action.infoUrl} kinds={D.actionKinds} />
@@ -333,13 +335,13 @@ export default function Dashboard({ D }) {
 
         {/* 자동화 구조 */}
         <section className="mt-12">
-          <SectionHead id="how" no="04" title="어떻게 돌아가나" desc="이 페이지는 열 때마다 API를 부르지 않습니다. 하루 한 번 받아서 확인을 마친 결과만 올려 둡니다." />
+          <SectionHead id="how" no="04" title="운영 방식" desc="페이지를 열 때마다 API를 호출하지는 않습니다. 하루 한 번 수집해서 검증을 마친 결과만 보여 줍니다." />
           <ol className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              [CloudDownload, '수집', '매일 09:00에 GitHub Actions가 두 API를 1,000건씩 끊어서 끝까지 받습니다. 접속이 안 되면 2분 쉬고 다시 해 보고, 세 번 안 되면 그날은 건너뜁니다.', `${fmt(M.totals.recall + M.totals.action)}건`],
-              [ListChecks, '확인', '받은 건수가 API가 알려준 전체 건수와 맞는지, 날짜와 업체명이 비어 있지 않은지, 전날보다 갑자기 줄지 않았는지 봅니다.', `${hardChecks.filter(c => c.ok).length} / ${hardChecks.length} 통과`],
-              [Tags, '정리·분류', '영문 필드명을 읽기 쉬운 이름으로 바꾸고, 사유 문장을 단어 기준으로 묶습니다. 똑같은 행이 두 번 오면 하나만 남깁니다.', `${D.recallReasons.length + D.violations.length}개 분류`],
-              [GitCommitHorizontal, '신규 표시·배포', '건마다 처음 본 날짜를 적어 두고 어제 목록과 비교합니다. 달라진 날에만 커밋이 생기고, 그때 Vercel이 다시 배포합니다.', lastChange ? `최근 ${dot(lastChange.date).slice(5)}` : '첫 수집'],
+              [CloudDownload, '수집', '매일 오전 9시에 GitHub Actions가 두 API의 전체 데이터를 1,000건씩 나눠 받습니다. 접속에 실패하면 2분 뒤 다시 시도하고, 세 번 모두 실패하면 그날은 건너뜁니다.', `${fmt(M.totals.recall + M.totals.action)}건`],
+              [ListChecks, '검증', '받은 건수가 API의 전체 건수와 같은지, 날짜와 업체명이 빠지지 않았는지, 전날보다 건수가 크게 줄지 않았는지 확인합니다.', `${hardChecks.filter(c => c.ok).length} / ${hardChecks.length} 통과`],
+              [Tags, '정리·분류', '영문 필드명을 한글 항목으로 바꾸고, 사유 문장을 단어 기준으로 분류합니다. 중복된 행은 하나만 남깁니다.', `${D.recallReasons.length + D.violations.length}개 분류`],
+              [GitCommitHorizontal, '신규 표시·배포', '건별로 처음 확인한 날짜를 기록해 전날 목록과 비교합니다. 내용이 바뀐 날에만 커밋하고, 그때 Vercel이 다시 배포합니다.', lastChange ? `최근 ${dot(lastChange.date).slice(5)}` : '첫 수집'],
             ].map(([Icon, t, b, big], i) => (
               <li key={t}>
                 <Card className="h-full p-5">
@@ -356,7 +358,7 @@ export default function Dashboard({ D }) {
           </ol>
 
           <Card className="mt-4">
-            <CardHeader><CardTitle>이번 수집 확인 결과</CardTitle><CardDescription>하나라도 실패하면 전날 화면을 그대로 둡니다. 노란 표시는 참고로만 남깁니다.</CardDescription></CardHeader>
+            <CardHeader><CardTitle>이번 수집 검증 결과</CardTitle><CardDescription>하나라도 실패하면 전날 데이터를 그대로 유지합니다. 노란색 항목은 참고용 경고입니다.</CardDescription></CardHeader>
             <CardContent>
               <ul className="grid gap-x-8 gap-y-1.5 text-[14px] md:grid-cols-2">
                 {M.checks.map(c => (
@@ -375,7 +377,7 @@ export default function Dashboard({ D }) {
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto max-w-6xl space-y-1 px-4 py-8 text-[13.5px] text-slate-600">
           <p>데이터: 식품의약품안전처 식품안전나라 Open API · 회수·판매중지(<a className="underline-offset-2 hover:underline" href={svc.recall.infoUrl} target="_blank" rel="noreferrer">I0490</a>), 행정처분(<a className="underline-offset-2 hover:underline" href={svc.action.infoUrl} target="_blank" rel="noreferrer">I0470</a>). 처분이나 회수의 정확한 내용은 <a className="underline-offset-2 hover:underline" href={M.portal} target="_blank" rel="noreferrer">식품안전나라</a> 에서 확인해 주세요.</p>
-          <p>사유 분류는 제가 정한 단어 기준이라 식약처 공식 분류와 다를 수 있습니다. 공개 데이터로 만든 개인 포트폴리오이며, 특정 기업이나 기관의 자료가 아닙니다.</p>
+          <p>사유 분류는 직접 정한 단어 기준이라 식약처 공식 분류와 다를 수 있습니다. 공개 데이터로 만든 개인 포트폴리오이며, 특정 기업이나 기관과는 관련이 없습니다.</p>
         </div>
       </footer>
     </>
