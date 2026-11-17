@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Segmented } from '@/components/ui/segmented';
 import { Table, THead, TBody, TR, TH, TD } from '@/components/ui/table';
 import { MonthlyBars, HBars } from '@/components/charts';
+import MailPreview from '@/components/MailPreview';
 import { cn, fmt, dot, kstTime } from '@/lib/utils';
 
 const RECALL = 'var(--color-recall)', ACTION = 'var(--color-action)';
@@ -206,6 +207,7 @@ export default function Dashboard({ D }) {
             <span className="text-[14.5px] font-bold tracking-tight">식품 회수·행정처분 모니터</span>
           </div>
           <nav aria-label="목차" className="ml-auto hidden gap-5 text-[14.5px] text-slate-600 md:flex">
+            <a href="#mail" className="hover:text-slate-900">오늘의 메일</a>
             <a href="#trend" className="hover:text-slate-900">추이</a>
             <a href="#class" className="hover:text-slate-900">사유</a>
             <a href="#list" className="hover:text-slate-900">목록</a>
@@ -246,16 +248,22 @@ export default function Dashboard({ D }) {
         {/* KPI */}
         <section className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="최근 30일 요약">
           <Kpi icon={PackageX} tone="bg-red-50 text-red-600" label="회수·판매중지 · 최근 30일" value={K.recall30} foot={<Change now={K.recall30} prev={K.recall30Prev} />} />
-          <Kpi icon={Gavel} tone="bg-blue-50 text-blue-600" label="행정처분 · 최근 30일" value={K.action30} foot={<Change now={K.action30} prev={K.action30Prev} />} />
+          <Kpi icon={Gavel} tone="bg-blue-50 text-blue-600" label="행정처분 · 최근 30일" value={K.action30} foot={<><Change now={K.action30} prev={K.action30Prev} /><div className="mt-1 text-slate-500">폐업 업소 정리 <b className="font-semibold tabular-nums text-slate-700">{fmt(K.closed30)}</b>건은 제외</div></>} />
           <Kpi icon={TriangleAlert} tone="bg-amber-50 text-amber-600" label="1등급 회수 · 최근 30일" value={K.grade1_30}
             foot={<span className="text-slate-600">건강에 미치는 위해가 가장 큰 등급 · 같은 기간 영업·제조정지 <b className="font-semibold tabular-nums text-slate-700">{fmt(K.stop30)}</b>건</span>} />
           <Kpi icon={BellRing} tone="bg-slate-100 text-slate-700" label="새로 올라온 건 · 최근 7일" value={K.new7.recall + K.new7.action}
             foot={<span className="text-slate-600 tabular-nums">회수 {fmt(K.new7.recall)}건 · 행정처분 {fmt(K.new7.action)}건</span>} />
         </section>
 
+        {/* 오늘의 메일 */}
+        <section className="mt-12">
+          <SectionHead id="mail" no="01" title="오늘의 메일" desc="실무에서는 이 내용을 담당자에게 메일로 보냅니다. 매일 수집이 끝나면 아래와 같은 메일 본문이 만들어집니다. 화면에서는 미리보기만 보여 주고 실제로 발송하지는 않습니다." />
+          <MailPreview mail={D.mail} portal={M.portal} />
+        </section>
+
         {/* 추이 */}
         <section className="mt-12">
-          <SectionHead id="trend" no="01" title="월별 추이" desc="최근 12개월의 월별 등록 건수입니다. 행정처분이 회수보다 훨씬 많아 그래프를 따로 그렸습니다. 이번 달은 집계 중이라 옅게 표시했습니다." />
+          <SectionHead id="trend" no="02" title="월별 추이" desc="최근 12개월의 월별 등록 건수입니다. 행정처분이 회수보다 훨씬 많아 그래프를 따로 그렸고, 폐업 업소를 정리하는 폐쇄 처분은 빼고 셌습니다. 이번 달은 집계 중이라 옅게 표시했습니다." />
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <Card className="lg:col-span-2">
               <CardContent className="grid grid-cols-1 gap-6 pt-5 md:grid-cols-2">
@@ -271,8 +279,8 @@ export default function Dashboard({ D }) {
               <details className="border-t border-slate-100 px-5 py-3 text-[13.5px] text-slate-600">
                 <summary className="cursor-pointer select-none hover:text-slate-900">표로 보기</summary>
                 <Table className="mt-2">
-                  <THead><TR className="hover:bg-transparent"><TH>월</TH><TH className="text-right">회수·판매중지</TH><TH className="text-right">행정처분</TH></TR></THead>
-                  <TBody>{D.monthly.map(m => <TR key={m.m}><TD className="tabular-nums">{m.m.replace('-', '.')}</TD><TD className="text-right tabular-nums">{fmt(m.recall)}</TD><TD className="text-right tabular-nums">{fmt(m.action)}</TD></TR>)}</TBody>
+                  <THead><TR className="hover:bg-transparent"><TH>월</TH><TH className="text-right">회수·판매중지</TH><TH className="text-right">행정처분</TH><TH className="text-right">폐업 정리(제외)</TH></TR></THead>
+                  <TBody>{D.monthly.map(m => <TR key={m.m}><TD className="tabular-nums">{m.m.replace('-', '.')}</TD><TD className="text-right tabular-nums">{fmt(m.recall)}</TD><TD className="text-right tabular-nums">{fmt(m.action)}</TD><TD className="text-right tabular-nums text-slate-500">{fmt(m.closed)}</TD></TR>)}</TBody>
                 </Table>
               </details>
             </Card>
@@ -305,14 +313,14 @@ export default function Dashboard({ D }) {
 
         {/* 분류 */}
         <section className="mt-12">
-          <SectionHead id="class" no="02" title="사유별로 보면" desc="회수 사유와 위반 내용은 문장으로 제공됩니다. 그래서 대장균, 이물, 위생교육 같은 핵심 단어를 기준으로 묶었고, 어느 쪽에도 해당하지 않으면 기타로 분류했습니다. 최근 12개월 기준입니다." />
+          <SectionHead id="class" no="03" title="사유별로 보면" desc="회수 사유와 위반 내용은 문장으로 제공됩니다. 그래서 대장균, 이물, 위생교육 같은 핵심 단어를 기준으로 묶었고, 어느 쪽에도 해당하지 않으면 기타로 분류했습니다. 최근 12개월 기준입니다." />
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <Card>
               <CardHeader><CardTitle>회수 사유</CardTitle><CardDescription className="tabular-nums">회수·판매중지 {fmt(totalRecall)}건</CardDescription></CardHeader>
               <CardContent><HBars items={D.recallReasons} color={RECALL} total={totalRecall} /></CardContent>
             </Card>
             <Card>
-              <CardHeader><CardTitle>처분 종류</CardTitle><CardDescription className="tabular-nums">행정처분 {fmt(totalAction)}건</CardDescription></CardHeader>
+              <CardHeader><CardTitle>처분 종류</CardTitle><CardDescription className="tabular-nums">폐업 정리 제외 {fmt(totalAction)}건</CardDescription></CardHeader>
               <CardContent><HBars items={D.actionKinds} color={ACTION} total={totalAction} /></CardContent>
             </Card>
             <Card>
@@ -320,11 +328,19 @@ export default function Dashboard({ D }) {
               <CardContent><HBars items={D.violations} color={ACTION} total={totalAction} /></CardContent>
             </Card>
           </div>
+          <div className="mt-4 flex gap-3 rounded-xl border border-slate-200 bg-white p-4 text-[14.5px] text-slate-700 shadow-sm">
+            <Info className="mt-0.5 size-4 shrink-0 text-blue-600" aria-hidden />
+            <p>
+              행정처분 원본 {fmt(M.inWindow.actionAll)}건 중 <b className="tabular-nums">{fmt(M.inWindow.closed)}</b>건({Math.round((M.inWindow.closed / Math.max(1, M.inWindow.actionAll)) * 100)}%)은
+              &lsquo;영업시설의 전부를 철거함&rsquo;처럼 이미 문을 닫은 업소를 서류상 정리하는 폐쇄 처분입니다.
+              위반 때문에 내려진 처분과 성격이 달라서 카드 숫자, 그래프, 목록, 메일에서는 빼고 따로 셌습니다.
+            </p>
+          </div>
         </section>
 
         {/* 목록 */}
         <section className="mt-12">
-          <SectionHead id="list" no="03" title="최근 목록" desc="최근 등록순입니다. 최근 7일 안에 새로 올라온 건은 신규로 표시합니다. 건마다 일련번호나 인허가번호를 함께 적어, 식품안전나라에서 원문을 찾아볼 수 있습니다." />
+          <SectionHead id="list" no="04" title="최근 목록" desc="최근 등록순입니다. 최근 7일 안에 새로 올라온 건은 신규로 표시합니다. 건마다 일련번호나 인허가번호를 함께 적어, 식품안전나라에서 원문을 찾아볼 수 있습니다." />
           <div className="grid grid-cols-1 gap-4">
             <RecallTable rows={D.recent.recall} isNew={isNew} infoUrl={svc.recall.infoUrl} />
             <ActionTable rows={D.recent.action} isNew={isNew} infoUrl={svc.action.infoUrl} kinds={D.actionKinds} />
@@ -333,7 +349,7 @@ export default function Dashboard({ D }) {
 
         {/* 자동화 구조 */}
         <section className="mt-12">
-          <SectionHead id="how" no="04" title="운영 방식" desc="페이지를 열 때마다 API를 호출하지는 않습니다. 하루 한 번 수집해서 검증을 마친 결과만 보여 줍니다." />
+          <SectionHead id="how" no="05" title="운영 방식" desc="페이지를 열 때마다 API를 호출하지는 않습니다. 하루 한 번 수집해서 검증을 마친 결과만 보여 줍니다." />
           <ol className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               [CloudDownload, '수집', '매일 오전 9시에 GitHub Actions가 두 API의 전체 데이터를 1,000건씩 나눠 받습니다. 접속에 실패하면 2분 뒤 다시 시도하고, 세 번 모두 실패하면 그날은 건너뜁니다.', `${fmt(M.totals.recall + M.totals.action)}건`],

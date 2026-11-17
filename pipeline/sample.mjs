@@ -50,8 +50,10 @@ for (let i = 0; i < DAYS; i++) {
   const dow = new Date(d).getUTCDay();
   const n = dow === 0 || dow === 6 ? 0 : Math.floor(rnd() * 9) + (i % 60 < 8 ? 3 : 0);
   for (let k = 0; k < n; k++) {
-    const kind = weighted(KINDS);
-    const [v, law] = weighted(VIOL.map(([a, b, w]) => [[a, b], w]));
+    // 실제 데이터처럼 절반 이상은 폐업 업소를 정리하는 폐쇄 처분으로 둡니다
+    const shut = rnd() < 0.6;
+    const kind = shut ? '영업소폐쇄' : weighted(KINDS);
+    const [v, law] = shut ? ['영업시설의 전부를 철거함', '식품위생법 제37조'] : weighted(VIOL.map(([a, b, w]) => [[a, b], w]));
     const vdate = addDays(d, -20 - Math.floor(rnd() * 40));
     const stop = /정지/.test(kind);
     actionRows.push({

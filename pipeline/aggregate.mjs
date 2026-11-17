@@ -158,32 +158,58 @@ const count = (rows, f) => { const m = new Map(); for (const r of rows) m.set(f(
 const inRange = (rows, from, to) => rows.filter(r => r.date > from && r.date <= to);
 const d30 = addDays(today, -30), d60 = addDays(today, -60), d7 = addDays(today, -7);
 const recent7 = rows => rows.filter(r => r.firstSeen && r.firstSeen > d7).length;
-const r30 = inRange(recall, d30, today), a30 = inRange(action, d30, today);
+// 폐업한 업소를 서류상 정리하는 폐쇄(시설 철거·멸실·장기 휴업)는 위반에 따른 처분과 성격이 달라 따로 셉니다
+const CLOSURE = '시설 철거·멸실·휴업';
+const isClosure = r => r.vCat === CLOSURE;
+const real = action.filter(r => !isClosure(r)), closed = action.filter(isClosure);
+const r30 = inRange(recall, d30, today), a30 = inRange(real, d30, today);
+
+// 오늘의 메일: 오늘 처음 확인된 건. 없으면 가장 최근 등록일의 건으로 미리보기를 채웁니다.
+const MAIL_MAX = 8;
+const pickMail = (rows, basis) => {
+  if (basis === 'new') return { date: today, rows: rows.filter(r => r.firstSeen === today) };
+  const date = rows[0]?.date ?? null;
+  return { date, rows: rows.filter(r => r.date === date) };
+};
+const newCount = [recall, real].reduce((n, rows) => n + rows.filter(r => r.firstSeen === today).length, 0);
+const basis = newCount > 0 ? 'new' : 'latest';
+const mR = pickMail(recall, basis), mA = pickMail(real, basis);
+const slimR = r => ({ id: r.id, date: r.date, product: r.product, company: r.company, reason: r.reason, grade: r.grade, seq: r.seq });
+const slimA = r => ({ id: r.id, date: r.date, company: r.company, industry: r.industry, kind: r.kind, violation: r.violation.length > 90 ? `${r.violation.slice(0, 90)}…` : r.violation, region: r.region, licenseNo: r.licenseNo });
+const mail = {
+  basis, today,
+  recall: { date: mR.date, total: mR.rows.length, rows: [...mR.rows].sort((a, b) => a.grade.localeCompare(b.grade)).slice(0, MAIL_MAX).map(slimR) },
+  action: { date: mA.date, total: mA.rows.length, rows: [...mA.rows].sort((a, b) => /정지/.test(b.kindCat) - /정지/.test(a.kindCat)).slice(0, MAIL_MAX).map(slimA) },
+  closed: basis === 'new' ? closed.filter(r => r.firstSeen === today).length : closed.filter(r => r.date === mA.date).length,
+};
 
 const D = {
   meta: {
     source: raw.recall.source, fetchedAt, asOf: today,
     window: `${months[0].replace('-', '.')} ~ ${months.at(-1).replace('-', '.')}`,
     totals: { recall: raw.recall.total, action: raw.action.total },
-    inWindow: { recall: recall.length, action: action.length },
+    inWindow: { recall: recall.length, action: real.length, closed: closed.length, actionAll: action.length },
     services: SERVICES.map(({ key, svc, label, infoUrl }) => ({ key, svc, label, infoUrl })),
     portal: PORTAL, baselineAt: newState.baselineAt,
     checks, warnings,
   },
   kpis: {
     recall30: r30.length, recall30Prev: inRange(recall, d60, d30).length,
-    action30: a30.length, action30Prev: inRange(action, d60, d30).length,
+    action30: a30.length, action30Prev: inRange(real, d60, d30).length,
+    closed30: inRange(closed, d30, today).length,
     grade1_30: r30.filter(r => r.grade === '1등급').length,
     stop30: a30.filter(r => /정지/.test(r.kindCat)).length,
-    new7: { recall: recent7(recall), action: recent7(action) },
+    new7: { recall: recent7(recall), action: recent7(real) },
   },
-  monthly: months.map(m => ({ m, recall: recall.filter(r => r.date.startsWith(m)).length, action: action.filter(r => r.date.startsWith(m)).length })),
+  monthly: months.map(m => ({ m, recall: recall.filter(r => r.date.startsWith(m)).length, action: real.filter(r => r.date.startsWith(m)).length, closed: closed.filter(r => r.date.startsWith(m)).length })),
   recallReasons: count(recall, r => r.cat),
   recallGrades: count(recall, r => r.grade),
-  actionKinds: count(action, r => r.kindCat),
-  violations: count(action, r => r.vCat),
+  actionKinds: count(real, r => r.kindCat),
+  violations: count(real, r => r.vCat),
+  closedKinds: count(closed, r => r.kindCat),
+  mail,
   changes: log.slice(0, 14),
-  recent: { recall: recall.slice(0, 60), action: action.slice(0, 120) },
+  recent: { recall: recall.slice(0, 60), action: real.slice(0, 120) },
 };
 
 // 수집 시각만 다르고 내용이 같으면 파일을 그대로 둡니다 (바뀐 날에만 커밋·재배포)
@@ -195,4 +221,4 @@ if (old && strip(old) === strip(D)) {
 }
 writeJson(OUT_FILE, D);
 console.log(`\n저장: ${OUT_FILE}`);
-console.log(`기간 ${D.meta.window} · 회수 ${recall.length}건 · 행정처분 ${action.length}건 · 신규 감지 회수 ${found.recall}건 / 처분 ${found.action}건${baseline && !sample ? ' (기준선 생성)' : ''}${sample ? ' · ⚠ 가상 샘플 데이터' : ''}`);
+console.log(`기간 ${D.meta.window} · 회수 ${recall.length}건 · 행정처분 ${real.length}건(폐업 정리 ${closed.length}건 별도) · 신규 감지 회수 ${found.recall}건 / 처분 ${found.action}건${baseline && !sample ? ' (기준선 생성)' : ''}${sample ? ' · ⚠ 가상 샘플 데이터' : ''}`);
