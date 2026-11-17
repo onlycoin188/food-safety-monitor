@@ -220,7 +220,7 @@ export default function Dashboard({ D }) {
         <section className="pt-10 pb-2">
           <Badge variant="outline" className="mb-4 bg-white px-2.5 py-1 text-[13.5px]"><Database className="size-3.5 text-red-600" aria-hidden />식품안전나라 공개 데이터 · 매일 자동 수집</Badge>
           <h1 className="text-[clamp(26px,4.2vw,40px)] font-bold leading-tight tracking-tight">
-            어제 이후 새로 올라온<br />식품 회수·행정처분
+            오늘 새로 올라온<br />식품 회수·행정처분
           </h1>
           <p className="mt-3 max-w-2xl text-[16.5px] text-slate-700">
             식품안전나라에 올라오는 회수·판매중지와 행정처분을 매일 오전 9시에 모아 옵니다.
@@ -235,12 +235,10 @@ export default function Dashboard({ D }) {
           <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="flex items-center gap-2 text-[15px] font-semibold"><Info className="size-4 text-red-600" aria-hidden />만든 이유</h2>
             <p className="mt-2 max-w-3xl text-[15px] text-slate-700">
-              회사에서 식품 법령과 안전 이슈를 요약해 메일로 보내는 자동화 과제를 3년 넘게 운영하고 있습니다.
-              담당자가 매일 1시간쯤 들이던 확인 작업이 10분 안쪽으로 줄어든 과제입니다.
+              회사에서는 UiPath 봇으로 식품 법령 과제를 매일 운영하고 있습니다. 관련 사이트를 크롤링해 데이터를 정리하고 담당자에게 메일로 보내는 과제로, 담당자의 확인 시간이 하루 1시간에서 10분 안쪽으로 줄었습니다.
             </p>
             <p className="mt-1.5 max-w-3xl text-[15px] text-slate-700">
-              운영을 맡아 온 일이라, 수집부터 검증, 화면까지 처음부터 직접 만들어 보고 싶었습니다.
-              사내 데이터는 밖에서 쓸 수 없어서, 누구나 받을 수 있는 식품안전나라 공개 데이터로 같은 종류의 일을 다시 만들었습니다.
+              RPA 툴이 아닌 방식으로도 같은 일을 만들 수 있을지 궁금했습니다. 그래서 Claude Code로 직접 코드를 짜서 수집, 검증, 배포까지 자동으로 돌아가게 구현했습니다.
             </p>
           </div>
         </section>
