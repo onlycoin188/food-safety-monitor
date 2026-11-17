@@ -28,9 +28,12 @@ const RECALL_RULES = [
   ['식품첨가물', /첨가물|보존료|소르빈산|안식향산|사카린|타르색소|이산화황|아질산/],
   ['표시·기한', /표시|알레르기|유통기한|소비기한/],
   ['무신고·무등록', /무등록|미신고|무신고|영업등록|품목제조보고/],
+  ['사용 불가 원료', /허용되지\s*않는|사용할\s*수\s*없는|원료로\s*사용/],
+  ['기타 기준·규격 부적합', /붕해|프로바이오틱스|함량|용출|메탄올|기준\s*규격|부적합/],
 ];
 const ACTION_RULES = [
-  ['영업소 폐쇄·취소', /폐쇄|취소/],
+  ['영업소 폐쇄', /폐쇄/],
+  ['허가·등록 취소', /취소/],
   ['영업정지', /영업정지/],
   ['품목(류) 제조정지', /제조정지/],
   ['과징금', /과징금/],
@@ -39,15 +42,20 @@ const ACTION_RULES = [
   ['경고', /경고/],
 ];
 const VIOLATION_RULES = [
+  ['시설 철거·멸실·휴업', /철거|멸실|폐업|휴업|소재지\s*불명|시설.{0,10}없|제27조\s*3항/],
+  ['처분 명령 미이행', /미이행/],
+  ['유흥접객', /유흥접객/],
   ['자가품질검사', /자가품질/],
   ['위생교육·건강진단', /위생교육|건강진단/],
   ['청소년 주류 제공', /청소년/],
-  ['기한 경과·보관 기준', /유통기한|소비기한|경과|보관기준|보존기준|냉장|냉동/],
+  ['표시·광고', /표시|광고|내용량/],
+  ['기한 경과·보관 기준', /유통기한|소비기한|경과|보관\s*기준|보존\s*기준|보관.{0,6}위반/],
   ['이물·위생 취급', /이물|위생적|청결|위생상태|쥐|바퀴/],
-  ['표시·광고', /표시|광고/],
   ['기준·규격 부적합', /기준|규격|부적합/],
   ['신고·보고 위반', /신고|등록|보고|변경/],
 ];
+// API가 빈 값 대신 '데이터없음', '-' 같은 글자를 넣는 경우가 있어 비웁니다
+const noData = s => { const v = clean(s); return !v || /^(-|없음|데이터\s*없음|해당\s*없음)$/.test(v) ? null : v; };
 const gradeOf = s => { const m = String(s ?? '').match(/[123]/); return m ? `${m[0]}등급` : '미분류'; };
 const regionOf = addr => {
   const t = clean(addr).split(' ')[0] ?? '';
@@ -66,8 +74,8 @@ const recallAll = raw.recall.rows.map(r => {
     cat: classify(reason, RECALL_RULES),
     grade: gradeOf(r.RTRVL_GRDCD_NM),
     type: clean(r.PRDLST_CD_NM || r.PRDLST_TYPE) || '-',
-    expiry: clean(r.DISTBTMLMT) || null,
-    made: clean(r.MNFDT) || null,
+    expiry: noData(r.DISTBTMLMT),
+    made: noData(r.MNFDT),
     barcode: clean(r.BRCDNO) || null,
     reportNo: clean(r.PRDLST_REPORT_NO) || null,
   };
@@ -166,7 +174,7 @@ const D = {
     recall30: r30.length, recall30Prev: inRange(recall, d60, d30).length,
     action30: a30.length, action30Prev: inRange(action, d60, d30).length,
     grade1_30: r30.filter(r => r.grade === '1등급').length,
-    stop30: a30.filter(r => /정지|폐쇄|취소/.test(r.kindCat)).length,
+    stop30: a30.filter(r => /정지/.test(r.kindCat)).length,
     new7: { recall: recent7(recall), action: recent7(action) },
   },
   monthly: months.map(m => ({ m, recall: recall.filter(r => r.date.startsWith(m)).length, action: action.filter(r => r.date.startsWith(m)).length })),

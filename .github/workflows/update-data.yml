@@ -18,10 +18,10 @@ jobs:
     env:
       FOODSAFETY_API_KEY: ${{ secrets.FOODSAFETY_API_KEY }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
 
       # 수집 스크립트는 Node 내장 기능만 써서 npm install이 필요 없습니다
       - name: 수집 (접속 실패 시 2분 간격으로 3번까지, 인증 오류는 바로 중단)

@@ -250,7 +250,7 @@ export default function Dashboard({ D }) {
           <Kpi icon={PackageX} tone="bg-red-50 text-red-600" label="회수·판매중지 · 최근 30일" value={K.recall30} foot={<Change now={K.recall30} prev={K.recall30Prev} />} />
           <Kpi icon={Gavel} tone="bg-blue-50 text-blue-600" label="행정처분 · 최근 30일" value={K.action30} foot={<Change now={K.action30} prev={K.action30Prev} />} />
           <Kpi icon={TriangleAlert} tone="bg-amber-50 text-amber-600" label="1등급 회수 · 최근 30일" value={K.grade1_30}
-            foot={<span className="text-slate-600">건강에 미치는 위해가 가장 큰 등급 · 영업·제조정지 <b className="font-semibold tabular-nums text-slate-700">{fmt(K.stop30)}</b>건</span>} />
+            foot={<span className="text-slate-600">건강에 미치는 위해가 가장 큰 등급 · 같은 기간 영업·제조정지 <b className="font-semibold tabular-nums text-slate-700">{fmt(K.stop30)}</b>건</span>} />
           <Kpi icon={BellRing} tone="bg-slate-100 text-slate-700" label="새로 올라온 건 · 최근 7일" value={K.new7.recall + K.new7.action}
             foot={<span className="text-slate-600 tabular-nums">회수 {fmt(K.new7.recall)}건 · 행정처분 {fmt(K.new7.action)}건</span>} />
         </section>
