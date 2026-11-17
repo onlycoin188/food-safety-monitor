@@ -7,6 +7,11 @@ on:
     # 매일 09:00(KST)
     - cron: '0 0 * * *'
   workflow_dispatch:
+    inputs:
+      rebuild_from:
+        description: '기준선 재구성 시작일 (YYYY-MM-DD). 비우면 평소대로 실행'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -35,6 +40,8 @@ jobs:
           exit 1
 
       - name: 검증·분류·변경 감지
+        env:
+          REBUILD_FROM: ${{ inputs.rebuild_from }}
         run: node pipeline/aggregate.mjs | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: 바뀐 경우에만 커밋
@@ -46,5 +53,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
           git add public/data/dashboard.json data/state/seen.json
-          git commit -m "데이터 자동 갱신 $(date -u +%Y-%m-%d)"
+          if [ -n "${{ inputs.rebuild_from }}" ]; then
+            git commit -m "등록일 기준으로 기준선 재구성 (${{ inputs.rebuild_from }} 이후 등록 건을 등록일에 확인한 것으로 기록)"
+          else
+            git commit -m "데이터 자동 갱신 $(date -u +%Y-%m-%d)"
+          fi
           git push

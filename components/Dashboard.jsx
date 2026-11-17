@@ -316,6 +316,7 @@ export default function Dashboard({ D }) {
                   <p className="flex items-start gap-2 rounded-lg bg-slate-50 p-3 text-[14px] text-slate-600"><Info className="mt-0.5 size-4 shrink-0" aria-hidden />{dot(M.baselineAt)}에 처음 수집했습니다. 그날 이미 올라와 있던 건은 신규로 세지 않고, 이후에 올라온 건만 기록합니다.</p>
                 )}
                 {lastChange && <p className="mt-3 text-[13px] text-slate-500">가장 최근 {dot(lastChange.date)}</p>}
+                {M.rebuilt && <p className="mt-2 flex items-start gap-1.5 rounded-lg bg-slate-50 p-2.5 text-[13px] text-slate-600"><Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />{dot(M.rebuilt.from)} 이후 기록은 {dot(M.rebuilt.at)}에 등록일 기준으로 다시 만든 것입니다. 이후 날짜부터는 매일 수집에서 실제로 감지한 기록입니다.</p>}
               </CardContent>
             </Card>
           </div>

@@ -141,12 +141,16 @@ const action = dedupe(actionAll).filter(r => r.date && r.date >= windowStart && 
 let state = readJson(SEEN_FILE);
 if (sample || state?.source !== raw.recall.source) state = null;
 const baseline = !state;
+// 기준선 재구성: REBUILD_FROM(YYYY-MM-DD) 이후 등록된 건은 등록일에 처음 확인한 것으로, 그 전 건은 기존으로 다시 기록합니다.
+// 봇이 실제로 그날 감지한 기록이 아니므로 화면과 기록에 재구성했다는 사실을 남깁니다.
+const rebuildFrom = !sample && /^\d{4}-\d{2}-\d{2}$/.test(process.env.REBUILD_FROM ?? '') ? process.env.REBUILD_FROM : null;
 const seen = { recall: {}, action: {} };
 const found = { recall: 0, action: 0 };
 for (const [key, rows] of [['recall', recall], ['action', action]]) {
   for (const r of rows) {
     const prev = state?.seen?.[key]?.[r.id];
-    if (prev) seen[key][r.id] = prev;
+    if (rebuildFrom) seen[key][r.id] = r.date >= rebuildFrom ? r.date : 'base';
+    else if (prev) seen[key][r.id] = prev;
     else if (sample) seen[key][r.id] = r.date;            // 샘플: 등록일에 감지됐다고 가정
     else if (baseline) seen[key][r.id] = 'base';
     else { seen[key][r.id] = today; found[key]++; }
@@ -159,16 +163,22 @@ if (sample) {
   log = Array.from({ length: 30 }, (_, i) => addDays(today, -i)).map(d => ({
     date: d, recall: recall.filter(r => r.date === d).length, action: action.filter(r => r.date === d).length,
   })).filter(x => x.recall + x.action > 0);
+} else if (rebuildFrom) {
+  const days = []; for (let d = rebuildFrom; d <= today; d = addDays(d, 1)) days.push(d);
+  log = days.reverse().map(d => ({ date: d, recall: recall.filter(r => r.date === d).length, action: action.filter(r => r.date === d).length, rebuilt: true }))
+    .filter(x => x.recall + x.action > 0);
 } else if (found.recall + found.action > 0) {
   log = [{ date: today, ...found }, ...log.filter(x => x.date !== today)].slice(0, 60);
 }
 // 한 번 본 항목은 API에서 잠깐 빠졌다가 다시 나와도 신규로 세지 않도록 기록을 남겨 둡니다 (기간 밖으로 나간 것만 정리)
 for (const key of ['recall', 'action']) {
-  for (const [id, v] of Object.entries(state?.seen?.[key] ?? {})) {
+  for (const [id, v] of Object.entries(rebuildFrom ? {} : state?.seen?.[key] ?? {})) {
     if (!(id in seen[key]) && (v === 'base' || v >= windowStart)) seen[key][id] = v;
   }
 }
-const newState = { source: raw.recall.source, baselineAt: state?.baselineAt ?? today, log, seen };
+const rebuilt = rebuildFrom ? { at: today, from: rebuildFrom } : state?.rebuilt ?? null;
+const newState = { source: raw.recall.source, baselineAt: rebuildFrom ? addDays(rebuildFrom, -1) : state?.baselineAt ?? today, rebuilt, log, seen };
+if (rebuildFrom) console.log(`기준선 재구성: ${rebuildFrom} 이후 등록 건을 등록일에 확인한 것으로 기록`);
 
 // ── 집계
 const count = (rows, f) => { const m = new Map(); for (const r of rows) m.set(f(r), (m.get(f(r)) ?? 0) + 1); return [...m].map(([name, n]) => ({ name, n })).sort((a, b) => b.n - a.n); };
@@ -207,7 +217,7 @@ const D = {
     totals: { recall: raw.recall.total, action: raw.action.total },
     inWindow: { recall: recall.length, action: real.length, closed: closed.length, actionAll: action.length },
     services: SERVICES.map(({ key, svc, label, infoUrl }) => ({ key, svc, label, infoUrl })),
-    portal: PORTAL, baselineAt: newState.baselineAt,
+    portal: PORTAL, baselineAt: newState.baselineAt, rebuilt: newState.rebuilt,
     checks, warnings,
   },
   kpis: {
