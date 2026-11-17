@@ -258,7 +258,7 @@ export default function Dashboard({ D }) {
         {/* 오늘의 메일 */}
         <section className="mt-12">
           <SectionHead id="mail" no="01" title="오늘의 메일" desc="실무에서는 이 내용을 담당자에게 메일로 보냅니다. 매일 수집이 끝나면 아래와 같은 메일 본문이 만들어집니다. 화면에서는 미리보기만 보여 주고 실제로 발송하지는 않습니다." />
-          <MailPreview mail={D.mail} portal={M.portal} />
+          {D.mail ? <MailPreview mail={D.mail} portal={M.portal} /> : <p className="text-slate-500">다음 수집 후 표시됩니다.</p>}
         </section>
 
         {/* 추이 */}
