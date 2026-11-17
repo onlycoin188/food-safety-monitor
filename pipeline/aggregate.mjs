@@ -152,6 +152,12 @@ if (sample) {
 } else if (found.recall + found.action > 0) {
   log = [{ date: today, ...found }, ...log.filter(x => x.date !== today)].slice(0, 60);
 }
+// 한 번 본 항목은 API에서 잠깐 빠졌다가 다시 나와도 신규로 세지 않도록 기록을 남겨 둡니다 (기간 밖으로 나간 것만 정리)
+for (const key of ['recall', 'action']) {
+  for (const [id, v] of Object.entries(state?.seen?.[key] ?? {})) {
+    if (!(id in seen[key]) && (v === 'base' || v >= windowStart)) seen[key][id] = v;
+  }
+}
 const newState = { source: raw.recall.source, baselineAt: state?.baselineAt ?? today, log, seen };
 
 // ── 집계

@@ -25,13 +25,24 @@ for (const s of SERVICES) {
     throw new Error(`${s.label} 응답 오류: ${body?.RESULT?.CODE ?? ''} ${body?.RESULT?.MSG ?? JSON.stringify(first).slice(0, 200)}`);
   }
   const total = Number(body.total_count);
-  const rows = [];
-  for (let a = 1; a <= total; a += PAGE) {
-    const b = Math.min(a + PAGE - 1, total);
-    const j = await getJson(url(a, b), `${s.label} ${a}~${b}`);
-    rows.push(...(j?.[s.svc]?.row ?? []));
-    await sleep(300); // 서버 부담을 줄이려고 잠깐 쉬어 갑니다
+  // 페이지를 나눠 받는 사이에 서버 쪽 정렬이 바뀌면 같은 행이 두 번 오고 다른 행이 빠질 수 있습니다.
+  // 그래서 중복이 보이면 처음부터 다시 받아 합칩니다 (최대 3회).
+  const all = new Map();
+  for (let pass = 1; pass <= 3; pass++) {
+    const rows = [];
+    for (let a = 1; a <= total; a += PAGE) {
+      const b = Math.min(a + PAGE - 1, total);
+      const j = await getJson(url(a, b), `${s.label} ${a}~${b}`);
+      rows.push(...(j?.[s.svc]?.row ?? []));
+      await sleep(300); // 서버 부담을 줄이려고 잠깐 쉬어 갑니다
+    }
+    const before = all.size;
+    for (const r of rows) all.set(JSON.stringify(r), r);
+    const dup = rows.length - new Set(rows.map(r => JSON.stringify(r))).size;
+    console.log(`${s.label} ${pass}회차: ${rows.length}건 수신, 같은 행 ${dup}건, 새로 합쳐진 행 ${all.size - before}건`);
+    if (dup === 0 || (pass > 1 && all.size === before)) break;
   }
+  const rows = [...all.values()];
   writeJson(path.join(RAW_DIR, `${s.key}.json`), { source: 'api', svc: s.svc, fetchedAt, total, rows }, 0);
-  console.log(`${s.label} (${s.svc}): 전체 ${total}건 중 ${rows.length}건 수신 · ${mask(url(1, 1), KEY)}`);
+  console.log(`${s.label} (${s.svc}): 전체 ${total}건 / 합친 결과 ${rows.length}건 · ${mask(url(1, 1), KEY)}`);
 }
