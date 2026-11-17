@@ -24,10 +24,12 @@ jobs:
           node-version: 20
 
       # 수집 스크립트는 Node 내장 기능만 써서 npm install이 필요 없습니다
-      - name: 수집 (접속 실패 시 2분 간격으로 3번까지)
+      - name: 수집 (접속 실패 시 2분 간격으로 3번까지, 인증 오류는 바로 중단)
         run: |
           for i in 1 2 3; do
-            node pipeline/fetch.mjs && exit 0
+            rc=0; node pipeline/fetch.mjs || rc=$?
+            [ "$rc" = 0 ] && exit 0
+            [ "$rc" = 2 ] && exit 1
             echo "수집 실패 ($i/3)"; sleep 120
           done
           exit 1

@@ -15,6 +15,12 @@ for (const s of SERVICES) {
   const first = await getJson(url(1, 1), `${s.label} 건수 확인`);
   const body = first?.[s.svc];
   const code = body?.RESULT?.CODE;
+  // INFO-100(인증키 오류), INFO-110(활용신청 없음) 같은 키 문제는 다시 시도해도 같으므로 바로 끝냅니다 (종료 코드 2)
+  if (/^INFO-1\d\d$/.test(code ?? '')) {
+    console.error(`${s.label}(${s.svc}) 인증 오류: ${code} ${body?.RESULT?.MSG ?? ''}`);
+    console.error(`식품안전나라 Open API에서 ${s.svc} 서비스 활용신청 여부를 확인하세요.`);
+    process.exit(2);
+  }
   if (!body || (code && code !== 'INFO-000')) {
     throw new Error(`${s.label} 응답 오류: ${body?.RESULT?.CODE ?? ''} ${body?.RESULT?.MSG ?? JSON.stringify(first).slice(0, 200)}`);
   }

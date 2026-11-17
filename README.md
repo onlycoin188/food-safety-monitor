@@ -16,7 +16,7 @@ app/, components/       Next.js (output: 'export') + Tailwind CSS, shadcn/ui 방
 ## 0. 준비물
 - Node.js 20 이상
 - 식품안전나라 Open API 인증키: https://www.foodsafetykorea.go.kr/api/ 회원가입 → 인증키 신청
-  (회수·판매중지 I0490, 행정처분 I0470 두 서비스 모두 같은 키로 호출)
+  키를 받은 뒤 **회수·판매중지(I0490)와 행정처분(I0470) 서비스 각각 활용신청**이 필요합니다. 안 하면 `INFO-110` 오류가 납니다.
 
 ## 1. GitHub Actions로 자동 갱신 (권장)
 1. 저장소 Settings → Secrets and variables → Actions에 `FOODSAFETY_API_KEY` 등록
