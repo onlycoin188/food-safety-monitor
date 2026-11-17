@@ -1,7 +1,7 @@
 {
  "meta": {
   "source": "api",
-  "fetchedAt": "2026-11-17T15:58:25.071Z",
+  "fetchedAt": "2026-11-17T15:59:14.836Z",
   "asOf": "2026-11-18",
   "window": "2025.12 ~ 2026.11",
   "totals": {
@@ -88,7 +88,7 @@
    {
     "name": "행정처분 전일 대비",
     "ok": true,
-    "detail": "이전 5,280건 → 5,279건",
+    "detail": "이전 5,284건 → 5,279건",
     "hard": true
    },
    {
@@ -118,7 +118,7 @@
   "stop30": 144,
   "new7": {
    "recall": 0,
-   "action": 5
+   "action": 0
   }
  },
  "monthly": [
@@ -334,16 +334,26 @@
   }
  ],
  "mail": {
-  "basis": "new",
+  "basis": "latest",
   "today": "2026-11-18",
   "recall": {
-   "date": "2026-11-18",
-   "total": 0,
-   "rows": []
+   "date": "2026-11-17",
+   "total": 1,
+   "rows": [
+    {
+     "id": "7420b4a251bd",
+     "date": "2026-11-17",
+     "product": "손수달임 천기담",
+     "company": "한국양토양록축산업협동조합",
+     "reason": "세균수 기준 규격 부적합",
+     "grade": "3등급",
+     "seq": "3000237440"
+    }
+   ]
   },
   "action": {
    "date": "2026-11-18",
-   "total": 5,
+   "total": 4,
    "rows": [
     {
      "id": "6132db14c4c5",
@@ -384,28 +394,12 @@
      "violation": "건강기능식품이 아닌 것을 건강기능식품으로 인식할 우려가 있는 표시 또는 광고",
      "region": "제주",
      "licenseNo": "20240026296"
-    },
-    {
-     "id": "a07e20575aab",
-     "date": "2026-10-20",
-     "company": "라이크댓 커피",
-     "industry": "식품제조가공업",
-     "kind": "품목제조정지",
-     "violation": "소비기한을 표시하지 않은 식품을 제조한 경우(1차)",
-     "region": "부산",
-     "licenseNo": "20220185768"
     }
    ]
   },
   "closed": 0
  },
- "changes": [
-  {
-   "date": "2026-11-18",
-   "recall": 0,
-   "action": 5
-  }
- ],
+ "changes": [],
  "recent": {
   "recall": [
    {
@@ -1383,7 +1377,7 @@
     "period": "2026-11-18 ~ 2026-11-24",
     "region": "서울",
     "licenseNo": "20220003958",
-    "firstSeen": "2026-11-18"
+    "firstSeen": null
    },
    {
     "id": "8fe2b30c0b0c",
@@ -1398,7 +1392,7 @@
     "period": "2026-11-18 ~ 2026-12-07",
     "region": "부산",
     "licenseNo": "20060128054",
-    "firstSeen": "2026-11-18"
+    "firstSeen": null
    },
    {
     "id": "ac0865786889",
@@ -1413,7 +1407,7 @@
     "period": "2026-11-18 ~ 2026-12-07",
     "region": "부산",
     "licenseNo": "20210008287",
-    "firstSeen": "2026-11-18"
+    "firstSeen": null
    },
    {
     "id": "b39c94eb8a4d",
@@ -1428,7 +1422,7 @@
     "period": "2026-11-18 ~ 2026-12-02",
     "region": "제주",
     "licenseNo": "20240026296",
-    "firstSeen": "2026-11-18"
+    "firstSeen": null
    },
    {
     "id": "a6a017ef5a1c",
