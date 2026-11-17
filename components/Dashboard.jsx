@@ -11,6 +11,7 @@ import { Segmented } from '@/components/ui/segmented';
 import { Table, THead, TBody, TR, TH, TD } from '@/components/ui/table';
 import { MonthlyBars, HBars } from '@/components/charts';
 import MailPreview from '@/components/MailPreview';
+import HygieneSection, { HygieneBadge } from '@/components/HygieneSection';
 import { cn, fmt, dot, kstTime } from '@/lib/utils';
 
 const RECALL = 'var(--color-recall)', ACTION = 'var(--color-action)';
@@ -73,7 +74,7 @@ function RecallTable({ rows, isNew, infoUrl }) {
   const [open, setOpen] = useState(null);
   const [limit, setLimit] = useState(12);
   const counts = useMemo(() => Object.fromEntries(['1등급', '2등급', '3등급'].map(g => [g, rows.filter(r => r.grade === g).length])), [rows]);
-  const list = rows.filter(r => (grade === 'all' || r.grade === grade) && (!q || `${r.product} ${r.company} ${r.reason} ${r.type}`.includes(q.trim())));
+  const list = rows.filter(r => (grade === 'all' || r.grade === grade || (grade === 'hyg' && r.hyg)) && (!q || `${r.product} ${r.company} ${r.reason} ${r.type}`.includes(q.trim())));
   return (
     <Card>
       <CardHeader className="gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -86,7 +87,7 @@ function RecallTable({ rows, isNew, infoUrl }) {
             <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-slate-500" aria-hidden />
             <Input value={q} onChange={e => setQ(e.target.value)} placeholder="제품명, 업체, 사유 검색" className="pl-8" aria-label="회수 목록 검색" />
           </div>
-          <Segmented value={grade} onChange={setGrade} options={[{ value: 'all', label: '전체' }, ...['1등급', '2등급', '3등급'].map(g => ({ value: g, label: g, count: counts[g] }))]} />
+          <Segmented value={grade} onChange={setGrade} className="max-w-full overflow-x-auto" options={[{ value: 'all', label: '전체' }, ...['1등급', '2등급', '3등급'].map(g => ({ value: g, label: g, count: counts[g] })), { value: 'hyg', label: '위생·방역', count: rows.filter(r => r.hyg).length }]} />
         </div>
       </CardHeader>
       <CardContent className="px-2 sm:px-5">
@@ -101,7 +102,7 @@ function RecallTable({ rows, isNew, infoUrl }) {
                 </TD>
                 <TD className="min-w-[150px]"><div className="font-medium text-slate-900">{r.product}</div><div className="text-[13px] text-slate-500 md:hidden">{r.company}</div></TD>
                 <TD className="hidden whitespace-nowrap text-slate-700 md:table-cell">{r.company}</TD>
-                <TD className="min-w-[180px]"><div className="text-slate-700">{r.reason}</div><Badge variant="outline" className="mt-1">{r.cat}</Badge></TD>
+                <TD className="min-w-[180px]"><div className="text-slate-700">{r.reason}</div><div className="mt-1 flex flex-wrap gap-1"><Badge variant="outline">{r.cat}</Badge><HygieneBadge type={r.hyg} /></div></TD>
                 <TD className="text-right"><Badge variant={gradeVariant(r.grade)}>{r.grade}</Badge></TD>
               </FragmentRow>
             ))}
@@ -120,7 +121,7 @@ function ActionTable({ rows, isNew, infoUrl, kinds }) {
   const [open, setOpen] = useState(null);
   const [limit, setLimit] = useState(12);
   const top = kinds.slice(0, 4).map(k => k.name);
-  const list = rows.filter(r => (kind === 'all' || r.kindCat === kind) && (!q || `${r.company} ${r.industry} ${r.violation} ${r.region} ${r.law ?? ''}`.includes(q.trim())));
+  const list = rows.filter(r => (kind === 'all' || r.kindCat === kind || (kind === 'hyg' && r.hyg)) && (!q || `${r.company} ${r.industry} ${r.violation} ${r.region} ${r.law ?? ''}`.includes(q.trim())));
   return (
     <Card>
       <CardHeader className="gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -133,7 +134,7 @@ function ActionTable({ rows, isNew, infoUrl, kinds }) {
             <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-slate-500" aria-hidden />
             <Input value={q} onChange={e => setQ(e.target.value)} placeholder="업소명, 업종, 위반 내용 검색" className="pl-8" aria-label="행정처분 목록 검색" />
           </div>
-          <Segmented value={kind} onChange={setKind} className="max-w-full overflow-x-auto" options={[{ value: 'all', label: '전체' }, ...top.map(k => ({ value: k, label: k }))]} />
+          <Segmented value={kind} onChange={setKind} className="max-w-full overflow-x-auto" options={[{ value: 'all', label: '전체' }, ...top.map(k => ({ value: k, label: k })), { value: 'hyg', label: '위생·방역' }]} />
         </div>
       </CardHeader>
       <CardContent className="px-2 sm:px-5">
@@ -148,7 +149,7 @@ function ActionTable({ rows, isNew, infoUrl, kinds }) {
                 </TD>
                 <TD className="min-w-[140px]"><div className="font-medium text-slate-900">{r.company}</div><div className="text-[13px] text-slate-500">{r.industry} · {r.region}</div></TD>
                 <TD className="whitespace-nowrap"><Badge variant={/정지|폐쇄|취소/.test(r.kindCat) ? 'danger' : 'secondary'}>{r.kind}</Badge></TD>
-                <TD className="min-w-[200px] text-slate-700"><p className={open === r.id ? '' : 'line-clamp-2'}>{r.violation}</p></TD>
+                <TD className="min-w-[200px] text-slate-700"><p className={open === r.id ? '' : 'line-clamp-2'}>{r.violation}</p>{r.hyg && <HygieneBadge type={r.hyg} className="mt-1" />}</TD>
               </FragmentRow>
             ))}
             {!list.length && <TR><TD colSpan={4} className="py-10 text-center text-slate-500">해당하는 건이 없습니다.</TD></TR>}
@@ -208,6 +209,7 @@ export default function Dashboard({ D }) {
           </div>
           <nav aria-label="목차" className="ml-auto hidden gap-5 text-[14.5px] text-slate-600 md:flex">
             <a href="#mail" className="hover:text-slate-900">오늘의 메일</a>
+            <a href="#hygiene" className="hover:text-slate-900">위생·방역</a>
             <a href="#trend" className="hover:text-slate-900">추이</a>
             <a href="#class" className="hover:text-slate-900">사유</a>
             <a href="#list" className="hover:text-slate-900">목록</a>
@@ -261,9 +263,17 @@ export default function Dashboard({ D }) {
           {D.mail ? <MailPreview mail={D.mail} portal={M.portal} /> : <p className="text-slate-500">다음 수집 후 표시됩니다.</p>}
         </section>
 
+        {/* 위생·방역 */}
+        {D.hygiene && (
+          <section className="mt-12">
+            <SectionHead id="hygiene" no="02" title="위생·방역 관련 이슈" desc="벌레·쥐 같은 해충과 이물, 세균 오염, 위생 취급 불량처럼 업장의 위생 관리와 방역으로 막을 수 있는 건만 따로 모았습니다. 회수 사유와 위반 내용의 단어를 기준으로 골랐습니다." />
+            <HygieneSection H={D.hygiene} totalRecall={M.inWindow.recall} totalAction={M.inWindow.action} />
+          </section>
+        )}
+
         {/* 추이 */}
         <section className="mt-12">
-          <SectionHead id="trend" no="02" title="월별 추이" desc="최근 12개월의 월별 등록 건수입니다. 행정처분이 회수보다 훨씬 많아 그래프를 따로 그렸고, 폐업 업소를 정리하는 폐쇄 처분은 빼고 셌습니다. 이번 달은 집계 중이라 옅게 표시했습니다." />
+          <SectionHead id="trend" no="03" title="월별 추이" desc="최근 12개월의 월별 등록 건수입니다. 행정처분이 회수보다 훨씬 많아 그래프를 따로 그렸고, 폐업 업소를 정리하는 폐쇄 처분은 빼고 셌습니다. 이번 달은 집계 중이라 옅게 표시했습니다." />
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <Card className="lg:col-span-2">
               <CardContent className="grid grid-cols-1 gap-6 pt-5 md:grid-cols-2">
@@ -313,7 +323,7 @@ export default function Dashboard({ D }) {
 
         {/* 분류 */}
         <section className="mt-12">
-          <SectionHead id="class" no="03" title="사유별로 보면" desc="회수 사유와 위반 내용은 문장으로 제공됩니다. 그래서 대장균, 이물, 위생교육 같은 핵심 단어를 기준으로 묶었고, 어느 쪽에도 해당하지 않으면 기타로 분류했습니다. 최근 12개월 기준입니다." />
+          <SectionHead id="class" no="04" title="사유별로 보면" desc="회수 사유와 위반 내용은 문장으로 제공됩니다. 그래서 대장균, 이물, 위생교육 같은 핵심 단어를 기준으로 묶었고, 어느 쪽에도 해당하지 않으면 기타로 분류했습니다. 최근 12개월 기준입니다." />
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <Card>
               <CardHeader><CardTitle>회수 사유</CardTitle><CardDescription className="tabular-nums">회수·판매중지 {fmt(totalRecall)}건</CardDescription></CardHeader>
@@ -340,7 +350,7 @@ export default function Dashboard({ D }) {
 
         {/* 목록 */}
         <section className="mt-12">
-          <SectionHead id="list" no="04" title="최근 목록" desc="최근 등록순입니다. 최근 7일 안에 새로 올라온 건은 신규로 표시합니다. 건마다 일련번호나 인허가번호를 함께 적어, 식품안전나라에서 원문을 찾아볼 수 있습니다." />
+          <SectionHead id="list" no="05" title="최근 목록" desc="최근 등록순입니다. 최근 7일 안에 새로 올라온 건은 신규로 표시합니다. 건마다 일련번호나 인허가번호를 함께 적어, 식품안전나라에서 원문을 찾아볼 수 있습니다." />
           <div className="grid grid-cols-1 gap-4">
             <RecallTable rows={D.recent.recall} isNew={isNew} infoUrl={svc.recall.infoUrl} />
             <ActionTable rows={D.recent.action} isNew={isNew} infoUrl={svc.action.infoUrl} kinds={D.actionKinds} />
@@ -349,7 +359,7 @@ export default function Dashboard({ D }) {
 
         {/* 자동화 구조 */}
         <section className="mt-12">
-          <SectionHead id="how" no="05" title="운영 방식" desc="페이지를 열 때마다 API를 호출하지는 않습니다. 하루 한 번 수집해서 검증을 마친 결과만 보여 줍니다." />
+          <SectionHead id="how" no="06" title="운영 방식" desc="페이지를 열 때마다 API를 호출하지는 않습니다. 하루 한 번 수집해서 검증을 마친 결과만 보여 줍니다." />
           <ol className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               [CloudDownload, '수집', '매일 오전 9시에 GitHub Actions가 두 API의 전체 데이터를 1,000건씩 나눠 받습니다. 접속에 실패하면 2분 뒤 다시 시도하고, 세 번 모두 실패하면 그날은 건너뜁니다.', `${fmt(M.totals.recall + M.totals.action)}건`],

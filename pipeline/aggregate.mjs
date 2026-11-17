@@ -57,6 +57,14 @@ const VIOLATION_RULES = [
 ];
 // API가 빈 값 대신 '데이터없음', '-' 같은 글자를 넣는 경우가 있어 비웁니다
 const noData = s => { const v = clean(s); return !v || /^(-|없음|데이터\s*없음|해당\s*없음)$/.test(v) ? null : v; };
+// 위생·방역: 업장 위생 관리와 방역으로 막을 수 있는 이슈 (해충·이물, 미생물 오염, 위생 취급 불량)
+// '축산물 위생관리법' 같은 법령 이름에 걸리지 않도록 법령명은 빼고 봅니다.
+const HYGIENE_RULES = [
+  ['해충·이물', /벌레|곤충|해충|쥐|바퀴|파리|나방|애벌레|유충|구더기|이물|철수세미|머리카락/],
+  ['미생물 오염', /세균|대장균|살모넬라|리스테리아|노로|곰팡이|포도상구균|바실루스|세레우스|비브리오|장출혈/],
+  ['위생 취급 불량', /위생적\s*취급|청결|위생\s*상태|비위생|방충|방서/],
+];
+const hygieneOf = text => HYGIENE_RULES.find(([, re]) => re.test(String(text).replace(/[가-힣]*위생관리법/g, '')))?.[0] ?? null;
 const gradeOf = s => { const m = String(s ?? '').match(/[123]/); return m ? `${m[0]}등급` : '미분류'; };
 const regionOf = addr => {
   const t = clean(addr).split(' ')[0] ?? '';
@@ -73,6 +81,7 @@ const recallAll = raw.recall.rows.map(r => {
     date: normDate(r.CRET_DTM),
     product, company, reason,
     cat: classify(reason, RECALL_RULES),
+    hyg: hygieneOf(reason),
     grade: gradeOf(r.RTRVL_GRDCD_NM),
     type: clean(r.PRDLST_CD_NM || r.PRDLST_TYPE) || '-',
     expiry: noData(r.DISTBTMLMT),
@@ -91,6 +100,7 @@ const actionAll = raw.action.rows.map(r => {
     company, industry: clean(r.INDUTY_CD_NM) || '-',
     kind: kind || '-', kindCat: classify(kind, ACTION_RULES),
     violation, vCat: classify(violation, VIOLATION_RULES),
+    hyg: hygieneOf(violation),
     law: clean(r.LAWORD_CD_NM) || null,
     period: bgn && end ? `${bgn} ~ ${end}` : null,
     region: regionOf(r.ADDR),
@@ -181,8 +191,8 @@ const pickMail = (rows, basis) => {
 const newCount = [recall, real].reduce((n, rows) => n + rows.filter(r => r.firstSeen === today).length, 0);
 const basis = newCount > 0 ? 'new' : 'latest';
 const mR = pickMail(recall, basis), mA = pickMail(real, basis);
-const slimR = r => ({ id: r.id, date: r.date, product: r.product, company: r.company, reason: r.reason, grade: r.grade, seq: r.seq });
-const slimA = r => ({ id: r.id, date: r.date, company: r.company, industry: r.industry, kind: r.kind, violation: r.violation.length > 90 ? `${r.violation.slice(0, 90)}…` : r.violation, region: r.region, licenseNo: r.licenseNo });
+const slimR = r => ({ id: r.id, date: r.date, product: r.product, company: r.company, reason: r.reason, grade: r.grade, seq: r.seq, hyg: r.hyg });
+const slimA = r => ({ id: r.id, date: r.date, company: r.company, industry: r.industry, kind: r.kind, violation: r.violation.length > 90 ? `${r.violation.slice(0, 90)}…` : r.violation, region: r.region, licenseNo: r.licenseNo, hyg: r.hyg });
 const mail = {
   basis, today,
   recall: { date: mR.date, total: mR.rows.length, rows: [...mR.rows].sort((a, b) => a.grade.localeCompare(b.grade)).slice(0, MAIL_MAX).map(slimR) },
@@ -214,6 +224,13 @@ const D = {
   actionKinds: count(real, r => r.kindCat),
   violations: count(real, r => r.vCat),
   closedKinds: count(closed, r => r.kindCat),
+  hygiene: {
+    recall: recall.filter(r => r.hyg).length, action: real.filter(r => r.hyg).length,
+    recall30: r30.filter(r => r.hyg).length, action30: a30.filter(r => r.hyg).length,
+    byType: count([...recall, ...real].filter(r => r.hyg), r => r.hyg),
+    latest: [...recall.filter(r => r.hyg).map(r => ({ ...slimR(r), src: 'recall' })), ...real.filter(r => r.hyg).map(r => ({ ...slimA(r), src: 'action' }))]
+      .sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8),
+  },
   mail,
   changes: log.slice(0, 14),
   recent: { recall: recall.slice(0, 60), action: real.slice(0, 120) },
