@@ -147,7 +147,7 @@ function ActionTable({ rows, isNew, infoUrl, kinds }) {
                 </TD>
                 <TD className="min-w-[140px]"><div className="font-medium text-slate-900">{r.company}</div><div className="text-[13px] text-slate-500">{r.industry} · {r.region}</div></TD>
                 <TD className="whitespace-nowrap"><Badge variant={/정지|폐쇄|취소/.test(r.kindCat) ? 'danger' : 'secondary'}>{r.kind}</Badge></TD>
-                <TD className="min-w-[200px] text-slate-700">{r.violation}</TD>
+                <TD className="min-w-[200px] text-slate-700"><p className={open === r.id ? '' : 'line-clamp-2'}>{r.violation}</p></TD>
               </FragmentRow>
             ))}
             {!list.length && <TR><TD colSpan={4} className="py-10 text-center text-slate-500">해당하는 건이 없습니다.</TD></TR>}
