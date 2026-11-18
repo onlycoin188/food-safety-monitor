@@ -4,7 +4,7 @@ name: 데이터 자동 갱신
 
 on:
   schedule:
-    # 매일 09:00(KST)
+    # 정각은 예약이 몰려 지연되기 쉬워 피함
     - cron: '56 23 * * *'  # 한국시간 매일 08:56 (UTC 23:56)
   workflow_dispatch:
     inputs:
