@@ -5,7 +5,7 @@ name: 데이터 자동 갱신
 on:
   schedule:
     # 매일 09:00(KST)
-    - cron: '0 0 * * *'
+    - cron: '56 23 * * *'  # 한국시간 매일 08:56 (UTC 23:56)
   workflow_dispatch:
     inputs:
       rebuild_from:
